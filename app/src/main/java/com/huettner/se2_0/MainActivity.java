@@ -25,8 +25,7 @@ import java.util.Observable;
 public class MainActivity extends AppCompatActivity {
 
 
-
-    private  EditText inputField;
+    private EditText inputField;
 
     private static TextView outputField;
 
@@ -34,13 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private BufferedReader reader;
     private BufferedWriter writer;
 
-    private   PrintStream ps;
+    private PrintStream ps;
 
     private static Handler handler;
-
-
-
-
 
 
     @Override
@@ -62,14 +57,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public class NetworkThread extends Thread{
+    public class NetworkThread extends Thread {
 
-        public NetworkThread(){
+        public NetworkThread() {
 
         }
 
-        public void run(){
-            if(socket == null) {
+        public void run() {
+            if (socket == null) {
                 try {
                     Socket socket = new Socket("se2-isys.aau.at", 53212);
                     OutputStream out = socket.getOutputStream();
@@ -87,24 +82,20 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ps.println(sendToServer);
 
-                Log.i("SE_2", "Send "+sendToServer);
+                Log.i("SE_2", "Send " + sendToServer);
 
-               while(!reader.ready()){
-                    Thread.sleep(1000);
+                while (!reader.ready()) {
+                    Thread.sleep(10);
                     Log.i("SE_2", "Waiting for an answer...");
                 }
                 String answer = "";
-                while(reader.ready()){
-                    answer+=reader.readLine();
+                while (reader.ready()) {
+                    answer += reader.readLine();
 
                 }
-                Log.i("SE_2", "Answered "+answer);
-                Message handleMessage = new Message();
-                Bundle b = new Bundle();
-                b.putString("answer", answer);
-                handleMessage.setData(b);
+                Log.i("SE_2", "Answered " + answer);
 
-                handler.sendMessage(handleMessage);
+                sendAnswer(answer);
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -114,9 +105,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sendToServer(View view){
-       new NetworkThread().start();
+    public void sendToServer(View view) {
+        new NetworkThread().start();
 
+    }
+
+    public void calculate(View view) {
+        String input = inputField.getText().toString();
+        int sum = 0;
+        for (int i = 0; i < input.length(); i++) {
+            sum += Integer.parseInt(input.charAt(i) + "");
+        }
+
+
+        sendAnswer("" +  Integer.toBinaryString(sum));
+
+
+    }
+
+    public void sendAnswer(String answer) {
+        Message handleMessage = new Message();
+        Bundle b = new Bundle();
+        b.putString("answer", answer);
+        handleMessage.setData(b);
+        handler.sendMessage(handleMessage);
     }
 
 
