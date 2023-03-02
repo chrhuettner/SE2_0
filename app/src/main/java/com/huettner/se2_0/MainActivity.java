@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private BufferedReader reader;
     private BufferedWriter writer;
 
-    private   OutputStream out;
+    private   PrintStream ps;
 
     private static Handler handler;
 
@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
             if(socket == null) {
                 try {
                     Socket socket = new Socket("se2-isys.aau.at", 53212);
-                    out = socket.getOutputStream();
-                    PrintStream ps = new PrintStream(out, true);
+                    OutputStream out = socket.getOutputStream();
+                    ps = new PrintStream(out, true);
                     writer = new BufferedWriter(new OutputStreamWriter(ps));
                     InputStream in = socket.getInputStream();
                     reader = new BufferedReader(new InputStreamReader(in));
@@ -85,9 +85,7 @@ public class MainActivity extends AppCompatActivity {
             }
             String sendToServer = inputField.getText().toString();
             try {
-                writer.write(sendToServer);
-                writer.flush();
-
+                ps.println(sendToServer);
 
                 Log.i("SE_2", "Send "+sendToServer);
 
