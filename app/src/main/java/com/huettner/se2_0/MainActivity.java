@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -27,7 +28,9 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText inputField;
 
-    private static TextView outputField;
+    private TextView outputField;
+
+    private Button serverButton;
 
     private Socket socket;
     private BufferedReader reader;
@@ -44,12 +47,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         inputField = (EditText) findViewById(R.id.editInputField);
         outputField = (TextView) findViewById(R.id.answerView);
+        serverButton = (Button) findViewById(R.id.button);
         NetworkThread network = new NetworkThread();
 
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                outputField.setText(msg.getData().get("answer").toString());
+                if(msg.getData().containsKey("answer")) {
+                    outputField.setText(msg.getData().get("answer").toString());
+                    serverButton.setEnabled(true);
+                }else  if(msg.getData().containsKey("calculationAnswer")) {
+                    outputField.setText(msg.getData().get("calculationAnswer").toString());
+                }
             }
         };
 
@@ -95,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.i("SE_2", "Answered " + answer);
 
-                sendAnswer(answer);
+                sendAnswer(answer,"answer");
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -106,11 +115,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendToServer(View view) {
+        serverButton.setEnabled(false);
         new NetworkThread().start();
 
     }
 
     public void calculate(View view) {
+
         String input = inputField.getText().toString();
         int sum = 0;
         for (int i = 0; i < input.length(); i++) {
@@ -118,15 +129,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        sendAnswer("" +  Integer.toBinaryString(sum));
+        sendAnswer("" +  Integer.toBinaryString(sum),"calculationAnswer");
 
 
     }
 
-    public void sendAnswer(String answer) {
+    public void sendAnswer(String answer, String type) {
+
         Message handleMessage = new Message();
         Bundle b = new Bundle();
-        b.putString("answer", answer);
+        b.putString(type, answer);
         handleMessage.setData(b);
         handler.sendMessage(handleMessage);
     }
